@@ -5,7 +5,6 @@ import HumSVG from '../assets/Svg/Icon/hum.svg';
 
 export default function WeatherCurrent({
     dateTime,
-    img,
     temperature,
     description,
     wind,
@@ -69,7 +68,7 @@ const styles = StyleSheet.create({
     temperature: {
         fontStyle: 'normal',
         fontWeight: '400',
-        fontSize: 100,
+        fontSize: 95,
         lineHeight: 127,
         color: '#FFF',
         textShadowColor: 'rgba(0, 0, 0, 0.1)',

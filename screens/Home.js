@@ -4,6 +4,7 @@ import {
     View,
     ScrollView,
     TouchableOpacity,
+    Image,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Header from '../components/Header';
@@ -13,8 +14,8 @@ import ArrowUpSVG from '../assets/Svg/Icon/up.svg';
 import { useGlobalContext } from '../context';
 
 export default function Home({ navigation }) {
-    const { weatherCityCurrent } = useGlobalContext();
-    const { nameCity, dt, temperature, description, wind, hum, imgWeather } =
+    const { weatherCityCurrent, dtToDayMonth } = useGlobalContext();
+    const { nameCity, dt, temperature, description, wind, hum, imgWeather, timezoneCity } =
         weatherCityCurrent;
 
     return (
@@ -23,24 +24,26 @@ export default function Home({ navigation }) {
                 colors={['rgba(72,187,226,1)', 'rgba(73,147,249,1)']}
                 style={styles.background}
             >
+                <TouchableOpacity
+                    activeOpacity={0.8}
+                    onPress={() => navigation.navigate('Find')}
+                    style={styles.findScreen}
+                >
+                    <Header city={nameCity} />
+                </TouchableOpacity>
                 <ScrollView
                     showsVerticalScrollIndicator={false}
                     style={styles.scrollView}
                 >
                     <View style={styles.container}>
-                        <TouchableOpacity
-                            activeOpacity={0.8}
-                            onPress={() => navigation.navigate('Find')}
-                            style={styles.findScreen}
-                        >
-                            <Header city={nameCity} />
-                        </TouchableOpacity>
-                        <View style={styles.weatherImg}>
-                            <CloudAndSun width={169.38} height={172} />
-                        </View>
+                        <Image
+                            style={styles.weatherImg}
+                            source={{
+                                uri: imgWeather,
+                            }}
+                        />
                         <WeatherCurrent
-                            dateTime={dt}
-                            img={imgWeather}
+                            dateTime={dtToDayMonth(dt, timezoneCity)}
                             temperature={temperature}
                             description={description}
                             wind={wind}
@@ -86,7 +89,11 @@ const styles = StyleSheet.create({
         width: '100%',
     },
     weatherImg: {
-        alignItems: 'center',
+        width: 180,
+        height: 120,
+        // borderRadius: 20,
+        marginVertical: 20,
+        // backgroundColor: '#E5E3C9',
     },
     button: {
         display: 'flex',

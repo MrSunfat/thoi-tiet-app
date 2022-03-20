@@ -1,15 +1,16 @@
 import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
 import React from 'react';
 import { AntDesign } from '@expo/vector-icons';
+import { useGlobalContext } from '../context';
 
-export default function RecentSearch({ city, maxTemperature, minTemperature }) {
+export default function RecentSearch({ city, maxTemperature, minTemperature, handleFunc }) {
     return (
-        <TouchableOpacity activeOpacity={0.6} style={styles.container}>
+        <TouchableOpacity activeOpacity={0.6} style={styles.container} onPress={handleFunc}>
             <View style={styles.cityBox}>
                 <AntDesign name="clockcircleo" size={19} color="#444E72" />
-                <Text style={styles.cityName}>Surabaya</Text>
+                <Text style={styles.cityName}>{city}</Text>
             </View>
-            <Text>34°/21°</Text>
+            <Text>{`${maxTemperature}°/${minTemperature}°`}</Text>
         </TouchableOpacity>
     );
 }
@@ -19,6 +20,7 @@ const styles = StyleSheet.create({
         display: 'flex',
         flexDirection: 'row',
         justifyContent: 'space-between',
+        textTransform: 'capitalize',
         paddingLeft: 2,
         marginVertical: 10,
     },

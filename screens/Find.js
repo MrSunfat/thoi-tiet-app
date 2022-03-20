@@ -21,6 +21,11 @@ export default function Find({ navigation }) {
         setHoverInput,
         weatherCityCurrent,
         setWeatherCityCurrent,
+        recentCities,
+        setRecentCities,
+        ms2kmhWind,
+        roundTemp,
+        dtToDayMonth,
     } = useGlobalContext();
 
     const backHome = () => {
@@ -28,33 +33,71 @@ export default function Find({ navigation }) {
         navigation.navigate('Home');
     };
 
-    const fetchDataHandler = useCallback(() => {
+    // Xử lý khi search
+    const fetchDataHandle = async () => {
         setInput('');
-        setHoverInput(false);
+        backHome();
         console.log(input);
-        fetch(
-            `http://api.openweathermap.org/data/2.5/weather?q=${input}&units=metric&appid=${api.key}`
-        )
-            .then((response) => response.json())
+
+        const url = `http://api.openweathermap.org/data/2.5/weather?q=${input}&units=metric&appid=${api.key}`;
+        const res = await fetch(url);
+        const data = await res.json();
+
+        setWeatherCityCurrent({
+            nameCity: data.name,
+            dt: data.dt,
+            temperature: roundTemp(data.main.temp),
+            description: data.weather[0].description,
+            wind: ms2kmhWind(data.wind.speed),
+            hum: data.main.humidity,
+            imgWeather: `http://openweathermap.org/img/wn/${data.weather[0].icon}@4x.png`,
+            lon: data.coord.lon,
+            lat: data.coord.lat,
+            timezoneCity: data.timezone,
+        });
+
+        let arrRecentCities = [...recentCities];
+
+        if (arrRecentCities.length >= 3) {
+            arrRecentCities.shift();
+        }
+        arrRecentCities.push({
+            nameCity: data.name,
+            minTemp: roundTemp(data.main.temp_min),
+            maxTemp: roundTemp(data.main.temp_max),
+        });
+        setRecentCities(arrRecentCities);
+    };
+
+    // Xử lý khi chọn city
+    const fetchDataHandleClick = async (city) => {
+        setInput('');
+        backHome();
+
+        const url = `http://api.openweathermap.org/data/2.5/weather?q=${city}&units=metric&appid=${api.key}`;
+        // const res = await fetch(url);
+        // const data = await res.json();
+
+        fetch(url)
+            .then((res) => res.json())
             .then((data) => {
-                // console.log(data);
                 setWeatherCityCurrent({
                     nameCity: data.name,
                     dt: data.dt,
-                    temperature: data.temp,
+                    temperature: roundTemp(data.main.temp),
                     description: data.weather[0].description,
                     wind: ms2kmhWind(data.wind.speed),
                     hum: data.main.humidity,
-                    imgWeather: data.weather.icon,
+                    imgWeather: `http://openweathermap.org/img/wn/${data.weather[0].icon}@4x.png`,
                     lon: data.coord.lon,
                     lat: data.coord.lat,
                     timezoneCity: data.timezone,
                 });
-                // setWeatherCityCurrent(data);
-                console.log(weatherCityCurrent);
             })
-            .catch((e) => console.dir(e));
-    }, [api.key, input]);
+            .catch(() => {
+                console.log('Error!!');
+            });
+    };
 
     return (
         <View style={styles.container}>
@@ -67,17 +110,25 @@ export default function Find({ navigation }) {
                         value={input}
                         onChangeText={(text) => setInput(text)}
                         onFocus={() => setHoverInput(true)}
-                        onSubmitEditing={fetchDataHandler}
+                        onSubmitEditing={fetchDataHandle}
                         placeholder="Search here"
                         style={styles.textInput}
                     />
                 </View>
-                {hoverInput && (
+                {hoverInput && recentCities.length > 0 && (
                     <View style={styles.containerRecent}>
                         <Text style={styles.titleRecent}>Recent search</Text>
-                        <RecentSearch />
-                        <RecentSearch />
-                        <RecentSearch />
+                        {recentCities.map((recentCity, index) => (
+                            <RecentSearch
+                                key={index}
+                                city={recentCity.nameCity}
+                                minTemperature={recentCity.minTemp}
+                                maxTemperature={recentCity.maxTemp}
+                                handleFunc={() =>
+                                    fetchDataHandleClick(recentCity.nameCity)
+                                }
+                            />
+                        ))}
                     </View>
                 )}
             </View>
@@ -127,6 +178,7 @@ const styles = StyleSheet.create({
         borderWidth: 2,
     },
     textInput: {
+        flex: 1,
         marginLeft: 12,
         color: '#838BAA',
         fontStyle: 'normal',
