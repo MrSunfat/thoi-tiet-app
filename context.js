@@ -12,7 +12,7 @@ function AppProvider({ children }) {
         svgUrl: 'https://s3-us-west-2.amazonaws.com/s.cdpn.io/162656/04n.svg',
     };
 
-    const monthNames = [
+    const monthNamesEng = [
         'January',
         'February',
         'March',
@@ -25,6 +25,21 @@ function AppProvider({ children }) {
         'October',
         'November',
         'December',
+    ];
+
+    const monthNames = [
+        'Th 1',
+        'Th 2',
+        'Th 3',
+        'Th 4',
+        'Th 5',
+        'Th 6',
+        'Th 7',
+        'Th 8',
+        'Th 9',
+        'Th 10',
+        'Th 11',
+        'Th 12',
     ];
 
     const ms2kmhWind = (wind) => {
@@ -64,37 +79,15 @@ function AppProvider({ children }) {
         return `${hour}.00`;
     };
 
-    const fetchDataHandlerr = useCallback(() => {
-        setInput('');
-        setHoverInput(false);
-        fetch(
-            `http://api.openweathermap.org/data/2.5/weather?q=${input}&units=metric&appid=${api.key}`
-        )
-            .then((response) => response.json())
-            .then((data) => {
-                setWeatherCityCurrent({
-                    nameCity: data?.name,
-                    temperature: roundTemp(data?.temp),
-                    description: data?.weather[0]?.description,
-                    wind: ms2kmhWind(data?.wind?.speed),
-                    hum: data?.main?.humidity,
-                    imgWeather: data?.weather?.icon,
-                    lon: data?.coord?.lon,
-                    lat: data?.coord?.lat,
-                    timezoneCity: data?.timezone,
-                });
-            })
-            .catch((e) => console.dir(e));
-    }, [api.key, input]);
-
     const [input, setInput] = useState('');
     const [hoverInput, setHoverInput] = useState(false);
 
     const [weatherCityCurrent, setWeatherCityCurrent] = useState({
+        cod: 200,
         nameCity: 'Semarang',
         dt: 1647755907,
         temperature: 28,
-        description: 'Cloud',
+        description: 'Mây',
         wind: 10,
         hum: 56,
         imgWeather: 'http://openweathermap.org/img/wn/04d@4x.png',
@@ -109,7 +102,7 @@ function AppProvider({ children }) {
 
     useEffect(() => {
         fetch(
-            `http://api.openweathermap.org/data/2.5/onecall?lat=${weatherCityCurrent?.lat}&lon=${weatherCityCurrent?.lon}&units=metric&appid=${api.key}`
+            `${api.baseUrl}/onecall?lat=${weatherCityCurrent?.lat}&lon=${weatherCityCurrent?.lon}&units=metric&appid=${api.key}`
         )
             .then((response) => response.json())
             .then((data) => {
@@ -120,38 +113,6 @@ function AppProvider({ children }) {
                 // console.log("hh");
             });
     }, [weatherCityCurrent]);
-
-    const fetchDataHandler = useCallback(() => {
-        setInput('');
-        setHoverInput(false);
-        console.log(input);
-        fetch(
-            `http://api.openweathermap.org/data/2.5/weather?q=${input}&units=metric&appid=${api.key}`
-        )
-            .then((response) => response.json())
-            .then((data) => {
-                // console.log(data);
-                setWeatherCityCurrent({
-                    nameCity: data.name,
-                    temperature: data.temp,
-                    description: data.weather[0].description,
-                    wind: ms2kmhWind(data.wind.speed),
-                    hum: data.main.humidity,
-                    imgWeather: data.weather.icon,
-                    lon: data.coord.lon,
-                    lat: data.coord.lat,
-                    timezoneCity: data.timezone,
-                });
-                setWeatherCityCurrent(data);
-                console.log(weatherCityCurrent);
-            })
-            .catch((e) => console.dir(e));
-    }, [api.key, input]);
-
-    const backHome = () => {
-        setHoverInput(false);
-        navigation.navigate('Home');
-    };
 
     const value = {
         api,

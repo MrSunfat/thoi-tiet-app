@@ -12,7 +12,7 @@ export default function WeatherCurrent({
 }) {
     return (
         <View style={styles.weatherCurrent} blurRadius={10}>
-            <Text style={styles.dateTime}>{`Today, ${dateTime}`}</Text>
+            <Text style={styles.dateTime}>{`Hôm nay, ${dateTime}`}</Text>
             <View style={styles.temperatureContainer}>
                 <Text style={styles.temperature}>{temperature}</Text>
                 <Text style={styles.degree}>°</Text>
@@ -22,7 +22,7 @@ export default function WeatherCurrent({
                 <View style={styles.infoWind}>
                     <View style={styles.flexCenter}>
                         <WindySVG width={20} height={20} />
-                        <Text style={styles.textWind}>Wind</Text>
+                        <Text style={styles.textWind}>Gió</Text>
                     </View>
                     <Text style={styles.verticalSign}>|</Text>
                     <Text style={styles.infoText}>{`${wind} km/h`}</Text>
@@ -30,7 +30,7 @@ export default function WeatherCurrent({
                 <View style={styles.infoHum}>
                     <View style={styles.flexCenter}>
                         <HumSVG width={20} height={20} />
-                        <Text style={styles.textHum}>Hum</Text>
+                        <Text style={styles.textHum}>Độ ẩm</Text>
                     </View>
                     <Text style={styles.verticalSign}>|</Text>
                     <Text style={styles.infoText}>{`${hum} %`}</Text>
@@ -133,7 +133,7 @@ const styles = StyleSheet.create({
     },
     textWind: {
         marginLeft: 22,
-        marginRight: 23,
+        marginRight: 44,
         fontStyle: 'normal',
         fontWeight: '400',
         fontSize: 18,
@@ -145,7 +145,7 @@ const styles = StyleSheet.create({
     },
     textHum: {
         marginLeft: 22,
-        marginRight: 28,
+        marginRight: 12,
         fontStyle: 'normal',
         fontWeight: '400',
         fontSize: 18,
@@ -156,7 +156,7 @@ const styles = StyleSheet.create({
         textShadowRadius: 1,
     },
     verticalSign: {
-        paddingRight: 20,
+        paddingRight: 16,
         fontStyle: 'normal',
         fontWeight: '400',
         fontSize: 18,

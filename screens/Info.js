@@ -42,13 +42,13 @@ export default function Info({ navigation }) {
                             size={24}
                             color="#fff"
                         />
-                        <Text style={styles.titleBack}>Back</Text>
+                        <Text style={styles.titleBack}>Quay lại</Text>
                     </TouchableOpacity>
                     <MaterialIcons name="settings" size={24} color="#fff" />
                 </View>
                 <View>
                     <View style={styles.title}>
-                        <Text style={styles.textMain}>Today</Text>
+                        <Text style={styles.textMain}>Hôm nay</Text>
                         <Text style={styles.dateToday}>{`${dtToDayMonthDaily(
                             weatherCityCurrent.dt,
                             weatherCityCurrent.timezoneCity
@@ -79,7 +79,7 @@ export default function Info({ navigation }) {
                 </View>
                 <View>
                     <View style={styles.title}>
-                        <Text style={styles.textMain}>Next Forecast</Text>
+                        <Text style={styles.textMain}>Dự báo trong tuần</Text>
                         <MaterialCommunityIcons
                             name="calendar-today"
                             size={24}

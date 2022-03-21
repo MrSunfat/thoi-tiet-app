@@ -4,14 +4,18 @@ import LocationSVG from '../assets/Svg/Icon/location.svg';
 import BellSVG from '../assets/Svg/Icon/bell.svg';
 import ArrowDownSVG from '../assets/Svg/Icon/arrow-down.svg';
 
-export default function Header({ city }) {
+export default function Header({ city, onHandle }) {
     return (
         <View style={styles.header}>
-            <View style={styles.headerCity}>
+            <TouchableOpacity
+                activeOpacity={0.8}
+                onPress={onHandle}
+                style={styles.headerCity}
+            >
                 <LocationSVG width={18} height={22} />
                 <Text style={styles.nameCity}>{city}</Text>
                 <ArrowDownSVG width={8.5} height={6} />
-            </View>
+            </TouchableOpacity>
 
             <View style={styles.headerBell}>
                 <BellSVG width={18} height={21.5} />

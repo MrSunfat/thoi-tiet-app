@@ -1,11 +1,8 @@
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import Home from './screens/Home';
 import Info from './screens/Info';
 import Find from './screens/Find';
-import RecentSearch from './components/RecentSearch';
 import { AppProvider } from './context';
 
 const Stack = createNativeStackNavigator();
@@ -35,13 +32,3 @@ export default function App() {
         </AppProvider>
     );
 }
-
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        alignItems: 'center',
-        justifyContent: 'center',
-        height: '100%',
-        // backgroundColor: 'orange',
-    },
-});

@@ -8,15 +8,29 @@ import {
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Header from '../components/Header';
-import CloudAndSun from '../assets/Svg/Weather/cloud-and-sun.svg';
 import WeatherCurrent from '../components/WeatherCurrent';
 import ArrowUpSVG from '../assets/Svg/Icon/up.svg';
 import { useGlobalContext } from '../context';
 
 export default function Home({ navigation }) {
-    const { weatherCityCurrent, dtToDayMonth } = useGlobalContext();
-    const { nameCity, dt, temperature, description, wind, hum, imgWeather, timezoneCity } =
-        weatherCityCurrent;
+    const { input, setInput, weatherCityCurrent, dtToDayMonth } =
+        useGlobalContext();
+    const {
+        cod,
+        nameCity,
+        dt,
+        temperature,
+        description,
+        wind,
+        hum,
+        imgWeather,
+        timezoneCity,
+    } = weatherCityCurrent;
+
+    const goFind = () => {
+        setInput('');
+        navigation.navigate('Find');
+    };
 
     return (
         <View style={styles.container}>
@@ -24,41 +38,46 @@ export default function Home({ navigation }) {
                 colors={['rgba(72,187,226,1)', 'rgba(73,147,249,1)']}
                 style={styles.background}
             >
-                <TouchableOpacity
-                    activeOpacity={0.8}
-                    onPress={() => navigation.navigate('Find')}
-                    style={styles.findScreen}
-                >
-                    <Header city={nameCity} />
-                </TouchableOpacity>
+                <Header
+                    city={cod === 200 ? nameCity : input}
+                    onHandle={goFind}
+                />
                 <ScrollView
                     showsVerticalScrollIndicator={false}
                     style={styles.scrollView}
                 >
-                    <View style={styles.container}>
-                        <Image
-                            style={styles.weatherImg}
-                            source={{
-                                uri: imgWeather,
-                            }}
-                        />
-                        <WeatherCurrent
-                            dateTime={dtToDayMonth(dt, timezoneCity)}
-                            temperature={temperature}
-                            description={description}
-                            wind={wind}
-                            hum={hum}
-                        />
-                        <TouchableOpacity
-                            activeOpacity={0.8}
-                            onPress={() => navigation.navigate('Back')}
-                        >
-                            <View style={styles.button}>
-                                <Text style={styles.text}>Forecast report</Text>
-                                <ArrowUpSVG width={24} height={24} />
-                            </View>
-                        </TouchableOpacity>
-                    </View>
+                    {cod === '404' && (
+                        <Text style={styles.noCity}>{`Không tìm thấy thông tin về thành phố ${input} !!`}</Text>
+                    )}
+
+                    {cod === 200 && (
+                        <View style={styles.container}>
+                            <Image
+                                style={styles.weatherImg}
+                                source={{
+                                    uri: imgWeather,
+                                }}
+                            />
+                            <WeatherCurrent
+                                dateTime={dtToDayMonth(dt, timezoneCity)}
+                                temperature={temperature}
+                                description={description}
+                                wind={wind}
+                                hum={hum}
+                            />
+                            <TouchableOpacity
+                                activeOpacity={0.8}
+                                onPress={() => navigation.navigate('Back')}
+                            >
+                                <View style={styles.button}>
+                                    <Text style={styles.text}>
+                                        Dự báo chi tiết
+                                    </Text>
+                                    <ArrowUpSVG width={24} height={24} />
+                                </View>
+                            </TouchableOpacity>
+                        </View>
+                    )}
                 </ScrollView>
             </LinearGradient>
         </View>
@@ -120,8 +139,15 @@ const styles = StyleSheet.create({
         color: '#444E72',
         marginRight: 16,
     },
-
-    findScreen: {
-        width: '100%',
+    noCity: {
+        marginTop: 50,
+        textAlign: 'center',
+        fontStyle: 'normal',
+        fontWeight: '700',
+        fontSize: 50,
+        color: '#FFF',
+        textShadowColor: 'rgba(0, 0, 0, 0.1)',
+        textShadowOffset: { width: -2, height: 3 },
+        textShadowRadius: 5,
     },
 });

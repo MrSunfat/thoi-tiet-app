@@ -4,6 +4,7 @@ import {
     View,
     TextInput,
     TouchableOpacity,
+    ToastAndroid,
 } from 'react-native';
 import React, { useState, useCallback } from 'react';
 import { AntDesign } from '@expo/vector-icons';
@@ -25,7 +26,6 @@ export default function Find({ navigation }) {
         setRecentCities,
         ms2kmhWind,
         roundTemp,
-        dtToDayMonth,
     } = useGlobalContext();
 
     const backHome = () => {
@@ -35,38 +35,52 @@ export default function Find({ navigation }) {
 
     // Xử lý khi search
     const fetchDataHandle = async () => {
-        setInput('');
-        backHome();
-        console.log(input);
+        if (input.length > 0) {
+            backHome();
+            console.log(input);
 
-        const url = `http://api.openweathermap.org/data/2.5/weather?q=${input}&units=metric&appid=${api.key}`;
-        const res = await fetch(url);
-        const data = await res.json();
+            const url = `${api.baseUrl}/weather?q=${input}&units=metric&appid=${api.key}&lang=vi`;
+            const res = await fetch(url);
+            const data = await res.json();
 
-        setWeatherCityCurrent({
-            nameCity: data.name,
-            dt: data.dt,
-            temperature: roundTemp(data.main.temp),
-            description: data.weather[0].description,
-            wind: ms2kmhWind(data.wind.speed),
-            hum: data.main.humidity,
-            imgWeather: `http://openweathermap.org/img/wn/${data.weather[0].icon}@4x.png`,
-            lon: data.coord.lon,
-            lat: data.coord.lat,
-            timezoneCity: data.timezone,
-        });
+            setWeatherCityCurrent({
+                cod: data.cod,
+                nameCity: data.cod===200 ? data.name : '',
+                dt: data?.dt,
+                temperature: roundTemp(data?.main?.temp),
+                description:
+                    data.cod === 200 ? data?.weather[0].description : '',
+                wind: ms2kmhWind(data?.wind?.speed),
+                hum: data?.main?.humidity,
+                imgWeather:
+                    data.cod === 200
+                        ? `http://openweathermap.org/img/wn/${data?.weather[0]?.icon}@4x.png`
+                        : '',
+                lon: data.cod === 200 ? data?.coord?.lon : 0,
+                lat: data.cod === 200 ? data?.coord?.lat : 0,
+                timezoneCity: data?.timezone,
+            });
 
-        let arrRecentCities = [...recentCities];
+            if (data.cod === 200) {
+                let arrRecentCities = [...recentCities];
 
-        if (arrRecentCities.length >= 3) {
-            arrRecentCities.shift();
+                if (arrRecentCities.length >= 3) {
+                    arrRecentCities.shift();
+                }
+                arrRecentCities.push({
+                    nameCity: data.name,
+                    minTemp: roundTemp(data.main.temp_min),
+                    maxTemp: roundTemp(data.main.temp_max),
+                });
+                setRecentCities(arrRecentCities);
+            }
+        } else {
+            ToastAndroid.showWithGravity(
+                'Vui lòng nhập tên thành phố!!',
+                ToastAndroid.SHORT,
+                ToastAndroid.TOP
+            )
         }
-        arrRecentCities.push({
-            nameCity: data.name,
-            minTemp: roundTemp(data.main.temp_min),
-            maxTemp: roundTemp(data.main.temp_max),
-        });
-        setRecentCities(arrRecentCities);
     };
 
     // Xử lý khi chọn city
@@ -74,7 +88,7 @@ export default function Find({ navigation }) {
         setInput('');
         backHome();
 
-        const url = `http://api.openweathermap.org/data/2.5/weather?q=${city}&units=metric&appid=${api.key}`;
+        const url = `${api.baseUrl}/weather?q=${city}&units=metric&appid=${api.key}&lang=vi`;
         // const res = await fetch(url);
         // const data = await res.json();
 
@@ -111,13 +125,13 @@ export default function Find({ navigation }) {
                         onChangeText={(text) => setInput(text)}
                         onFocus={() => setHoverInput(true)}
                         onSubmitEditing={fetchDataHandle}
-                        placeholder="Search here"
+                        placeholder="Nhập tên thành phố"
                         style={styles.textInput}
                     />
                 </View>
                 {hoverInput && recentCities.length > 0 && (
                     <View style={styles.containerRecent}>
-                        <Text style={styles.titleRecent}>Recent search</Text>
+                        <Text style={styles.titleRecent}>Gần đây</Text>
                         {recentCities.map((recentCity, index) => (
                             <RecentSearch
                                 key={index}
