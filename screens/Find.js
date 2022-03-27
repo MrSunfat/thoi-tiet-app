@@ -6,11 +6,14 @@ import {
     TouchableOpacity,
     ToastAndroid,
 } from 'react-native';
-import React, { useState, useCallback } from 'react';
+import React, { useEffect } from 'react';
 import { AntDesign } from '@expo/vector-icons';
 import RecentSearch from '../components/RecentSearch';
 import MapView, { PROVIDER_GOOGLE } from 'react-native-maps';
 import { useGlobalContext } from '../context';
+import db from '../firebase';
+import firebase from 'firebase/app';
+import 'firebase/firestore';
 
 export default function Find({ navigation }) {
     // const [city, setCity] = useState('');
@@ -26,6 +29,7 @@ export default function Find({ navigation }) {
         setRecentCities,
         ms2kmhWind,
         roundTemp,
+        nameCityCurrent,
     } = useGlobalContext();
 
     const backHome = () => {
@@ -45,7 +49,7 @@ export default function Find({ navigation }) {
 
             setWeatherCityCurrent({
                 cod: data.cod,
-                nameCity: data.cod===200 ? data.name : '',
+                nameCity: data.cod === 200 ? data.name : '',
                 dt: data?.dt,
                 temperature: roundTemp(data?.main?.temp),
                 description:
@@ -65,21 +69,26 @@ export default function Find({ navigation }) {
                 let arrRecentCities = [...recentCities];
 
                 if (arrRecentCities.length >= 3) {
-                    arrRecentCities.shift();
+                    db.collection('recentCities')
+                        .doc(arrRecentCities[2].id)
+                        .delete();
                 }
-                arrRecentCities.push({
+
+                db.collection('recentCities').add({
                     nameCity: data.name,
                     minTemp: roundTemp(data.main.temp_min),
                     maxTemp: roundTemp(data.main.temp_max),
+                    createAt: firebase.firestore.FieldValue.serverTimestamp(),
                 });
-                setRecentCities(arrRecentCities);
+
+                updateNameCityCurrent(data.name);
             }
         } else {
             ToastAndroid.showWithGravity(
                 'Vui lòng nhập tên thành phố!!',
                 ToastAndroid.SHORT,
                 ToastAndroid.TOP
-            )
+            );
         }
     };
 
@@ -96,6 +105,7 @@ export default function Find({ navigation }) {
             .then((res) => res.json())
             .then((data) => {
                 setWeatherCityCurrent({
+                    cod: data.cod,
                     nameCity: data.name,
                     dt: data.dt,
                     temperature: roundTemp(data.main.temp),
@@ -107,11 +117,31 @@ export default function Find({ navigation }) {
                     lat: data.coord.lat,
                     timezoneCity: data.timezone,
                 });
+
+                updateNameCityCurrent(data.name);
             })
             .catch(() => {
                 console.log('Error!!');
             });
     };
+
+    const updateNameCityCurrent = (city) => {
+        db.collection('weatherCurrent').doc(nameCityCurrent.id).update({
+            nameCity: city,
+        });
+    };
+
+    useEffect(() => {
+        db.collection('recentCities')
+            .orderBy('createAt', 'desc')
+            .onSnapshot((snapshot) => {
+                setRecentCities(
+                    snapshot.docs.map((doc) => {
+                        return { ...doc.data(), id: doc.id };
+                    })
+                );
+            });
+    }, []);
 
     return (
         <View style={styles.container}>
@@ -138,9 +168,10 @@ export default function Find({ navigation }) {
                                 city={recentCity.nameCity}
                                 minTemperature={recentCity.minTemp}
                                 maxTemperature={recentCity.maxTemp}
-                                handleFunc={() =>
-                                    fetchDataHandleClick(recentCity.nameCity)
-                                }
+                                handleFunc={() => {
+                                    fetchDataHandleClick(recentCity.nameCity);
+                                    console.log(recentCity.nameCity);
+                                }}
                             />
                         ))}
                     </View>

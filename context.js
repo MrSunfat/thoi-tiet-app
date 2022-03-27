@@ -1,4 +1,5 @@
 import React, { useState, useContext, useCallback, useEffect } from 'react';
+import db from './firebase';
 
 const AppContext = React.createContext();
 
@@ -7,7 +8,8 @@ function AppProvider({ children }) {
     const timeZone = 25200;
 
     const api = {
-        key: '8db986fe08377dcec893f8940d9c2cfd',
+        oldKey: '8db986fe08377dcec893f8940d9c2cfd',
+        key: '5ebbd20056cc7dfdf9a3dd35b024c7f9',
         baseUrl: 'http://api.openweathermap.org/data/2.5/',
         svgUrl: 'https://s3-us-west-2.amazonaws.com/s.cdpn.io/162656/04n.svg',
     };
@@ -28,15 +30,15 @@ function AppProvider({ children }) {
     ];
 
     const monthNames = [
-        'Th 1',
-        'Th 2',
-        'Th 3',
-        'Th 4',
-        'Th 5',
-        'Th 6',
-        'Th 7',
-        'Th 8',
-        'Th 9',
+        'Th 01',
+        'Th 02',
+        'Th 03',
+        'Th 04',
+        'Th 05',
+        'Th 06',
+        'Th 07',
+        'Th 08',
+        'Th 09',
         'Th 10',
         'Th 11',
         'Th 12',
@@ -59,7 +61,10 @@ function AppProvider({ children }) {
             new Date(dt * 1000) - (timeZone - timezoneCity) * 1000
         );
 
-        return `${time.getDate()} ${monthNames[time.getMonth()]}`;
+        const dTime =
+            time.getDate() < 10 ? `0${time.getDate()}` : time.getDate();
+
+        return `${dTime} ${monthNames[time.getMonth()]}`;
     };
 
     const dtToDayMonthDaily = (dt, timezoneCity) => {
@@ -67,7 +72,10 @@ function AppProvider({ children }) {
             new Date(dt * 1000) - (timeZone - timezoneCity) * 1000
         );
 
-        return `${monthNames[time.getMonth()]}, ${time.getDate()}`;
+        const dTime =
+            time.getDate() < 10 ? `0${time.getDate()}` : time.getDate();
+
+        return `${monthNames[time.getMonth()]}, ${dTime}`;
     };
 
     const dtToHour = (dt, timezoneCity) => {
@@ -100,6 +108,46 @@ function AppProvider({ children }) {
     const [currentSearchCity, setCurrentSearchCity] = useState({});
     const [recentCities, setRecentCities] = useState([]);
 
+    const [nameCityCurrent, setNameCityCurrent] = useState({});
+
+    useEffect(() => {
+        db.collection('weatherCurrent').onSnapshot((snapshot) => {
+            // snapshot.docs.map((doc) => {
+            //     console.log(doc);
+            // });
+            snapshot.docs.map((doc) => {
+                setNameCityCurrent({ ...doc.data(), id: doc.id });
+            });
+        });
+    }, []);
+
+    useEffect(() => {
+        const url = `${api.baseUrl}/weather?q=${nameCityCurrent?.nameCity}&units=metric&appid=${api.key}&lang=vi`;
+        fetch(url)
+            .then((response) => response.json())
+            .then((data) => {
+                setWeatherCityCurrent({
+                    cod: data.cod,
+                    nameCity: data.cod === 200 ? data.name : '',
+                    dt: data?.dt,
+                    temperature: roundTemp(data?.main?.temp),
+                    description:
+                        data.cod === 200 ? data?.weather[0].description : '',
+                    wind: ms2kmhWind(data?.wind?.speed),
+                    hum: data?.main?.humidity,
+                    imgWeather:
+                        data.cod === 200
+                            ? `http://openweathermap.org/img/wn/${data?.weather[0]?.icon}@4x.png`
+                            : '',
+                    lon: data.cod === 200 ? data?.coord?.lon : 0,
+                    lat: data.cod === 200 ? data?.coord?.lat : 0,
+                    timezoneCity: data?.timezone,
+                });
+            });
+
+        console.log('Hello H');
+    }, [nameCityCurrent]);
+
     useEffect(() => {
         fetch(
             `${api.baseUrl}/onecall?lat=${weatherCityCurrent?.lat}&lon=${weatherCityCurrent?.lon}&units=metric&appid=${api.key}`
@@ -113,6 +161,16 @@ function AppProvider({ children }) {
                 // console.log("hh");
             });
     }, [weatherCityCurrent]);
+
+    
+
+    // useEffect(() => {
+    //     db.collection("recentCities").onSnapshot((snapshot) => {
+    //         snapshot.docs.map((doc) => {
+    //             console.log(doc.data());
+    //         })
+    //     })
+    // }, [])
 
     const value = {
         api,
@@ -130,6 +188,8 @@ function AppProvider({ children }) {
         setWeatherCityCurrent,
         setWeatherHourly,
         setWeatherDaily,
+        nameCityCurrent, 
+        setNameCityCurrent,
 
         ms2kmhWind,
         roundTemp,

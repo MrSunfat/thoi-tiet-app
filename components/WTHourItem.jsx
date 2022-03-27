@@ -1,6 +1,5 @@
 import { StyleSheet, Text, View, Image } from 'react-native';
 import React from 'react';
-import CloudAndSun from '../assets/Svg/Weather/cloud-and-sun.svg';
 
 export default function WTHourItem({ temperature, hour, img }) {
     return (

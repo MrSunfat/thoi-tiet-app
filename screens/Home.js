@@ -5,6 +5,7 @@ import {
     ScrollView,
     TouchableOpacity,
     Image,
+    ActivityIndicator,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Header from '../components/Header';
@@ -13,8 +14,13 @@ import ArrowUpSVG from '../assets/Svg/Icon/up.svg';
 import { useGlobalContext } from '../context';
 
 export default function Home({ navigation }) {
-    const { input, setInput, weatherCityCurrent, dtToDayMonth } =
-        useGlobalContext();
+    const {
+        input,
+        setInput,
+        weatherCityCurrent,
+        dtToDayMonth,
+        nameCityCurrent,
+    } = useGlobalContext();
     const {
         cod,
         nameCity,
@@ -38,47 +44,67 @@ export default function Home({ navigation }) {
                 colors={['rgba(72,187,226,1)', 'rgba(73,147,249,1)']}
                 style={styles.background}
             >
-                <Header
-                    city={cod === 200 ? nameCity : input}
-                    onHandle={goFind}
-                />
-                <ScrollView
-                    showsVerticalScrollIndicator={false}
-                    style={styles.scrollView}
-                >
-                    {cod === '404' && (
-                        <Text style={styles.noCity}>{`Không tìm thấy thông tin về thành phố ${input} !!`}</Text>
-                    )}
+                {Object.entries(weatherCityCurrent).length === 0 && (
+                    <View style={{ marginBottom: 20 }}>
+                        <ActivityIndicator size="large" color="#00ff00" />
+                    </View>
+                )}
 
-                    {cod === 200 && (
-                        <View style={styles.container}>
-                            <Image
-                                style={styles.weatherImg}
-                                source={{
-                                    uri: imgWeather,
-                                }}
-                            />
-                            <WeatherCurrent
-                                dateTime={dtToDayMonth(dt, timezoneCity)}
-                                temperature={temperature}
-                                description={description}
-                                wind={wind}
-                                hum={hum}
-                            />
-                            <TouchableOpacity
-                                activeOpacity={0.8}
-                                onPress={() => navigation.navigate('Back')}
-                            >
-                                <View style={styles.button}>
-                                    <Text style={styles.text}>
-                                        Dự báo chi tiết
-                                    </Text>
-                                    <ArrowUpSVG width={24} height={24} />
+                {Object.entries(weatherCityCurrent).length > 0 && (
+                    <>
+                        <Header
+                            city={cod === 200 ? nameCity : input}
+                            onHandle={goFind}
+                        />
+                        <ScrollView
+                            showsVerticalScrollIndicator={false}
+                            style={styles.scrollView}
+                        >
+                            {cod === '404' && (
+                                <Text
+                                    style={styles.noCity}
+                                >{`Không tìm thấy thông tin về thành phố ${input} !!`}</Text>
+                            )}
+
+                            {cod === 200 && (
+                                <View style={styles.container}>
+                                    <Image
+                                        style={styles.weatherImg}
+                                        source={{
+                                            uri: imgWeather,
+                                        }}
+                                    />
+                                    <WeatherCurrent
+                                        dateTime={dtToDayMonth(
+                                            dt,
+                                            timezoneCity
+                                        )}
+                                        temperature={temperature}
+                                        description={description}
+                                        wind={wind}
+                                        hum={hum}
+                                    />
+                                    <TouchableOpacity
+                                        activeOpacity={0.8}
+                                        onPress={() =>
+                                            navigation.navigate('Back')
+                                        }
+                                    >
+                                        <View style={styles.button}>
+                                            <Text style={styles.text}>
+                                                Dự báo chi tiết
+                                            </Text>
+                                            <ArrowUpSVG
+                                                width={24}
+                                                height={24}
+                                            />
+                                        </View>
+                                    </TouchableOpacity>
                                 </View>
-                            </TouchableOpacity>
-                        </View>
-                    )}
-                </ScrollView>
+                            )}
+                        </ScrollView>
+                    </>
+                )}
             </LinearGradient>
         </View>
     );

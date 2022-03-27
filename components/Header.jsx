@@ -13,7 +13,9 @@ export default function Header({ city, onHandle }) {
                 style={styles.headerCity}
             >
                 <LocationSVG width={18} height={22} />
-                <Text style={styles.nameCity}>{city}</Text>
+                <Text style={styles.nameCity}>
+                    {city?.length > 8 ? `${city.substring(0, 8)}...` : city}
+                </Text>
                 <ArrowDownSVG width={8.5} height={6} />
             </TouchableOpacity>
 
