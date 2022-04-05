@@ -5,17 +5,24 @@ import {
     TextInput,
     TouchableOpacity,
     ToastAndroid,
+    LogBox,
+    Platform,
 } from 'react-native';
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { AntDesign } from '@expo/vector-icons';
+import { MaterialIcons } from '@expo/vector-icons';
 import RecentSearch from '../components/RecentSearch';
-import MapView, { PROVIDER_GOOGLE } from 'react-native-maps';
+import MapView, { PROVIDER_GOOGLE, Marker } from 'react-native-maps';
 import { useGlobalContext } from '../context';
 import db from '../firebase';
 import firebase from 'firebase/app';
 import 'firebase/firestore';
+import Constants from 'expo-constants';
+import * as Location from 'expo-location';
 
 export default function Find({ navigation }) {
+    LogBox.ignoreLogs(['Setting a timer']);
+
     // const [city, setCity] = useState('');
     const {
         api,
@@ -31,6 +38,46 @@ export default function Find({ navigation }) {
         roundTemp,
         nameCityCurrent,
     } = useGlobalContext();
+
+    // lay dia chi cua dt
+    const getMyLocation = async () => {
+        if (Platform.OS === 'android' && !Constants.isDevice) {
+            return;
+        }
+        let { status } = await Location.requestForegroundPermissionsAsync();
+        if (status !== 'granted') {
+            return;
+        }
+
+        let location = await Location.getCurrentPositionAsync({});
+
+        const url = `${api.baseUrl}/weather?lat=${location?.coords?.latitude}&lon=${location?.coords?.longitude}&units=metric&appid=${api.key}&lang=vi`;
+        // const res = await fetch(url);
+        // const data = await res.json();
+
+        fetch(url)
+            .then((res) => res.json())
+            .then((data) => {
+                setWeatherCityCurrent({
+                    cod: data.cod,
+                    nameCity: data.name,
+                    dt: data.dt,
+                    temperature: roundTemp(data.main.temp),
+                    description: data.weather[0].description,
+                    wind: ms2kmhWind(data.wind.speed),
+                    hum: data.main.humidity,
+                    imgWeather: `http://openweathermap.org/img/wn/${data.weather[0].icon}@4x.png`,
+                    lon: data.coord.lon,
+                    lat: data.coord.lat,
+                    timezoneCity: data.timezone,
+                });
+
+                updateNameCityCurrent(data.name);
+            })
+            .catch(() => {
+                console.log('Error!!');
+            });
+    }
 
     const backHome = () => {
         setHoverInput(false);
@@ -136,9 +183,7 @@ export default function Find({ navigation }) {
             .orderBy('createAt', 'desc')
             .onSnapshot((snapshot) => {
                 setRecentCities(
-                    snapshot.docs.map((doc) => {
-                        return { ...doc.data(), id: doc.id };
-                    })
+                    snapshot.docs.map((doc) => ({ ...doc.data(), id: doc.id }))
                 );
             });
     }, []);
@@ -185,10 +230,24 @@ export default function Find({ navigation }) {
                     region={{
                         latitude: weatherCityCurrent.lat,
                         longitude: weatherCityCurrent.lon,
-                        latitudeDelta: 0.015,
-                        longitudeDelta: 0.0121,
+                        latitudeDelta: 0.3,
+                        longitudeDelta: 0.1,
                     }}
-                />
+                >
+                    <Marker
+                        coordinate={{
+                            latitude: weatherCityCurrent.lat,
+                            longitude: weatherCityCurrent.lon,
+                        }}
+                        pinColor={'#F74F57'}
+                        title={'title'}
+                        description={'description'}
+                    />
+                </MapView>
+
+                <TouchableOpacity style={styles.myLocation} activeOpacity={0.75} onPress={getMyLocation}>
+                    <MaterialIcons name="my-location" size={24} color="black" />
+                </TouchableOpacity>
             </View>
         </View>
     );
@@ -249,4 +308,21 @@ const styles = StyleSheet.create({
     map: {
         ...StyleSheet.absoluteFillObject,
     },
+    myLocation: {
+        position: 'absolute',
+        maxWidth: 45,
+        right: 16,
+        bottom: 40,
+        padding: 10,
+        borderRadius: 22,
+        backgroundColor: '#fff',
+        shadowColor: '#000',
+        shadowOffset: {
+            width: 5,
+            height: 4,
+        },
+        shadowOpacity: 0.25,
+        shadowRadius: 3.84,
+        elevation: 5,
+    }
 });

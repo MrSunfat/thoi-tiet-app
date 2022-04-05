@@ -110,6 +110,7 @@ function AppProvider({ children }) {
 
     const [nameCityCurrent, setNameCityCurrent] = useState({});
 
+    /*
     useEffect(() => {
         db.collection('weatherCurrent').onSnapshot((snapshot) => {
             // snapshot.docs.map((doc) => {
@@ -120,6 +121,7 @@ function AppProvider({ children }) {
             });
         });
     }, []);
+    */
 
     useEffect(() => {
         const url = `${api.baseUrl}/weather?q=${nameCityCurrent?.nameCity}&units=metric&appid=${api.key}&lang=vi`;

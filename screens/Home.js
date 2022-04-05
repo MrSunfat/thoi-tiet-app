@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import {
     StyleSheet,
     Text,
@@ -12,6 +13,7 @@ import Header from '../components/Header';
 import WeatherCurrent from '../components/WeatherCurrent';
 import ArrowUpSVG from '../assets/Svg/Icon/up.svg';
 import { useGlobalContext } from '../context';
+import db from '../firebase';
 
 export default function Home({ navigation }) {
     const {
@@ -19,8 +21,11 @@ export default function Home({ navigation }) {
         setInput,
         weatherCityCurrent,
         dtToDayMonth,
+        setNameCityCurrent,
         nameCityCurrent,
     } = useGlobalContext();
+    const [loading, setLoading] = useState(false);
+
     const {
         cod,
         nameCity,
@@ -33,6 +38,18 @@ export default function Home({ navigation }) {
         timezoneCity,
     } = weatherCityCurrent;
 
+    useEffect(() => {
+        db.collection('weatherCurrent').onSnapshot((snapshot) => {
+            // snapshot.docs.map((doc) => {
+            //     console.log(doc);
+            // });
+            snapshot.docs.map((doc) => {
+                setNameCityCurrent({ ...doc.data(), id: doc.id });
+            });
+        });
+        setLoading(true);
+    }, []);
+
     const goFind = () => {
         setInput('');
         navigation.navigate('Find');
@@ -44,13 +61,13 @@ export default function Home({ navigation }) {
                 colors={['rgba(72,187,226,1)', 'rgba(73,147,249,1)']}
                 style={styles.background}
             >
-                {Object.entries(weatherCityCurrent).length === 0 && (
+                {!loading && (
                     <View style={{ marginBottom: 20 }}>
                         <ActivityIndicator size="large" color="#00ff00" />
                     </View>
                 )}
 
-                {Object.entries(weatherCityCurrent).length > 0 && (
+                {loading && (
                     <>
                         <Header
                             city={cod === 200 ? nameCity : input}
