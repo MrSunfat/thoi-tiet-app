@@ -7,6 +7,7 @@ import {
     TouchableOpacity,
     Image,
     ActivityIndicator,
+    LogBox,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Header from '../components/Header';
@@ -16,6 +17,8 @@ import { useGlobalContext } from '../context';
 import db from '../firebase';
 
 export default function Home({ navigation }) {
+    LogBox.ignoreLogs(['AsyncStorage has been extracted from react-native core and will be removed in a future release.']);
+
     const {
         input,
         setInput,

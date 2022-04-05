@@ -5,6 +5,7 @@ import Info from './screens/Info';
 import Find from './screens/Find';
 import { AppProvider } from './context';
 
+
 const Stack = createNativeStackNavigator();
 
 export default function App() {

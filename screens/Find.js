@@ -8,7 +8,7 @@ import {
     LogBox,
     Platform,
 } from 'react-native';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { AntDesign } from '@expo/vector-icons';
 import { MaterialIcons } from '@expo/vector-icons';
 import RecentSearch from '../components/RecentSearch';
